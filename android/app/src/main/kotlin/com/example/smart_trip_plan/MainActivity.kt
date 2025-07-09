@@ -1,4 +1,4 @@
-package com.example.smart_trip_plan
+package com.mayank.smarttripplanner
 
 import io.flutter.embedding.android.FlutterActivity
 
