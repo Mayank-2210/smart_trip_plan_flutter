@@ -1,4 +1,8 @@
+// lib/presentation/auth/signup_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smart_trip_plan/services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -10,17 +14,60 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers for text fields
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
   bool isLoading = false;
+  final authService = AuthService();
 
-  void _signUp() {
+  /// Sign Up with Email/Password
+  void _signUp() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Firebase sign-up logic
-      print("Signing up with: ${emailController.text}");
+      setState(() => isLoading = true);
+
+      try {
+        final user = await authService.signUpWithEmail(
+          emailController.text.trim(),
+          passwordController.text.trim(),
+        );
+
+        if (user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Sign up successful")),
+          );
+
+          // TODO: Navigate to Home Screen
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  /// Google Sign In
+  void _signInWithGoogle() async {
+    setState(() => isLoading = true);
+
+    try {
+      final user = await authService.signInWithGoogle();
+      if (user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Signed in with Google")),
+        );
+
+        // TODO: Navigate to Home Screen
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -34,8 +81,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: [
                 const SizedBox(height: 40),
 
@@ -50,7 +96,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 32),
 
-                // Full Name
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(
@@ -62,7 +107,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Email
                 TextFormField(
                   controller: emailController,
                   decoration: const InputDecoration(
@@ -75,7 +119,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
@@ -89,7 +132,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Sign Up Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -103,14 +145,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 16),
 
-                // Already have an account?
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("Already have an account? "),
                     GestureDetector(
                       onTap: () {
-                        // TODO: Go to Login
+                        // TODO: Navigate to Login Screen
                       },
                       child: const Text(
                         "Login",
@@ -123,7 +164,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 24),
 
-                // Divider
                 Row(
                   children: const [
                     Expanded(child: Divider()),
@@ -137,16 +177,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 16),
 
-                // Google Sign-In
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      // TODO: Google Sign-In
-                    },
+                    onPressed: _signInWithGoogle,
                     icon: Image.asset(
-                      'assets/google_logo.png', // Add asset
+                      'assets/google_logo.png',
                       height: 20,
                     ),
                     label: const Text("Sign up with Google"),
