@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71842554553",
+    "project_id": "smart-trip-planner-fc329",
+    "storage_bucket": "smart-trip-planner-fc329.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71842554553:android:fe910374721d6e5e927168",
+        "android_client_info": {
+          "package_name": "com.mayank.smarttripplanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDesq9IomA3LJcZUBfJo6Cjoa7XF_SKh-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

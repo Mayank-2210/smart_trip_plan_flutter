@@ -1,3 +1,15 @@
+// 👇 👇 ADD THIS AT THE VERY TOP
+buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.1")
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// ⬇️ KEEP YOUR EXISTING CONFIG BELOW
 allprojects {
     repositories {
         google()
