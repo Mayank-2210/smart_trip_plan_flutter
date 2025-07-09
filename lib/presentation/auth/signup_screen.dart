@@ -22,54 +22,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final authService = AuthService();
 
   /// Sign Up with Email/Password
-  void _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => isLoading = true);
-
-      try {
-        final user = await authService.signUpWithEmail(
-          emailController.text.trim(),
-          passwordController.text.trim(),
-        );
-
-        if (user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Sign up successful")),
-          );
-
-          // TODO: Navigate to Home Screen
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      } finally {
-        setState(() => isLoading = false);
-      }
-    }
-  }
-
-  /// Google Sign In
-  void _signInWithGoogle() async {
+void _signUp() async {
+  if (_formKey.currentState!.validate()) {
     setState(() => isLoading = true);
 
     try {
-      final user = await authService.signInWithGoogle();
-      if (user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Signed in with Google")),
-        );
+      await authService.signUpWithEmail(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+        nameController.text.trim(),
+        context,
+      );
 
-        // TODO: Navigate to Home Screen
-      }
+      // No need to check for user != null
+      // Navigation is already handled inside AuthService
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sign up successful")),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Sign up failed: $e")),
       );
     } finally {
       setState(() => isLoading = false);
     }
   }
+}
+
+
+  /// Google Sign In
+void _signInWithGoogle() async {
+  setState(() => isLoading = true);
+
+  try {
+    await authService.signInWithGoogle(context);
+
+    // Navigation handled inside service, no need for if (user != null)
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Signed in with Google")),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Google Sign-in failed: $e")),
+    );
+  } finally {
+    setState(() => isLoading = false);
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
