@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ✅ NEW: Firebase import
+import '../auth/signup_screen.dart'; // ✅ NEW: For navigation after logout
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -19,11 +21,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Home"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Later: Navigate to Profile Screen
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              // ✅ NEW: Logout logic
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SignUpScreen()),
+              );
             },
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -58,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 final vision = _tripController.text;
                 if (vision.isNotEmpty) {
-                  // Later: Send to AI agent
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Creating itinerary for: $vision")),
                   );
@@ -76,9 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text("Japan Trip, 10 days vacation"),
               subtitle: const Text("Explore Kyoto, Tokyo, and Mt. Fuji"),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // Later: Open saved itinerary
-              },
+              onTap: () {},
             ),
           ],
         ),

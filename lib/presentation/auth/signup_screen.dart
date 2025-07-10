@@ -1,8 +1,8 @@
 // lib/presentation/auth/signup_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smart_trip_plan/services/auth_service.dart';
+import 'login_screen.dart'; // ✅ NEW: Import LoginScreen
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,54 +22,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final authService = AuthService();
 
   /// Sign Up with Email/Password
-void _signUp() async {
-  if (_formKey.currentState!.validate()) {
+  void _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => isLoading = true);
+
+      try {
+        await authService.signUpWithEmail(
+          emailController.text.trim(),
+          passwordController.text.trim(),
+          nameController.text.trim(),
+          context,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Sign up successful")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Sign up failed: $e")),
+        );
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  /// Google Sign In
+  void _signInWithGoogle() async {
     setState(() => isLoading = true);
 
     try {
-      await authService.signUpWithEmail(
-        emailController.text.trim(),
-        passwordController.text.trim(),
-        nameController.text.trim(),
-        context,
-      );
+      await authService.signInWithGoogle(context);
 
-      // No need to check for user != null
-      // Navigation is already handled inside AuthService
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Sign up successful")),
+        const SnackBar(content: Text("Signed in with Google")),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sign up failed: $e")),
+        SnackBar(content: Text("Google Sign-in failed: $e")),
       );
     } finally {
       setState(() => isLoading = false);
     }
   }
-}
-
-
-  /// Google Sign In
-void _signInWithGoogle() async {
-  setState(() => isLoading = true);
-
-  try {
-    await authService.signInWithGoogle(context);
-
-    // Navigation handled inside service, no need for if (user != null)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Signed in with Google")),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Google Sign-in failed: $e")),
-    );
-  } finally {
-    setState(() => isLoading = false);
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +80,12 @@ void _signInWithGoogle() async {
               children: [
                 const SizedBox(height: 40),
 
-                Text("Create your account",
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold)),
+                Text(
+                  "Create your account",
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -151,12 +149,20 @@ void _signInWithGoogle() async {
                     const Text("Already have an account? "),
                     GestureDetector(
                       onTap: () {
-                        // TODO: Navigate to Login Screen
+                        // ✅ NEW: Navigate to Login screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                        );
                       },
                       child: const Text(
                         "Login",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.blue),
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
                       ),
                     )
                   ],
