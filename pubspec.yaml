@@ -37,6 +37,11 @@ dependencies:
   url_launcher: ^6.2.5
   share_plus: ^7.2.1
   http: ^0.13.6
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+  path_provider: ^2.1.1
+  build_runner: ^2.4.6
+  isar_generator: ^3.1.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
