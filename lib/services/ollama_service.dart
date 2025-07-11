@@ -1,11 +1,9 @@
-// lib/services/ollama_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// OllamaService communicates with your Node.js backend to get itineraries from Ollama
+/// OllamaService communicates with Node.js backend to get itineraries from Ollama
 class OllamaService {
-  // ✅ Update to your backend URL (localhost or production IP)
+  // Update to your backend URL (localhost or production IP)
   final String backendUrl = 'http://localhost:5000/api/ai/generate-itinerary';
 
   /// Sends prompt and gets structured itinerary

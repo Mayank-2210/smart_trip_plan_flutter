@@ -21,18 +21,20 @@ class ItineraryScreen extends StatelessWidget {
   });
 
   void _save(BuildContext context) async {
-    final model = ItineraryFirestoreModel(
-      id: '',
-      prompt: prompt,
-      jsonData: jsonEncode(itineraryJson),
-      savedAt: DateTime.now(),
-    );
-    await FirebaseService().saveItinerary(model);
+  final model = ItineraryFirestoreModel(
+    id: '',
+    prompt: prompt,
+    jsonData: jsonEncode(itineraryJson),
+    savedAt: DateTime.now(),
+  );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Itinerary saved successfully")),
-    );
-  }
+  await FirebaseService().saveItinerary(model);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Itinerary saved successfully")),
+  );
+}
+
 
   void _refine(BuildContext context) {
     Navigator.push(
@@ -125,7 +127,7 @@ class ItineraryScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Center(
               child: OutlinedButton(
-                onPressed: () => Navigator.pop(context), // ✅ Fix here
+                onPressed: () => Navigator.pop(context), 
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF065F46)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

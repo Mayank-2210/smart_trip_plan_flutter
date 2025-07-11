@@ -1,8 +1,6 @@
-// lib/presentation/auth/signup_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:smart_trip_plan/services/auth_service.dart';
-import 'login_screen.dart'; // ✅ NEW: Import LoginScreen
+import 'login_screen.dart'; // LoginScreen
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -149,7 +147,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const Text("Already have an account? "),
                     GestureDetector(
                       onTap: () {
-                        // ✅ NEW: Navigate to Login screen
+                        //Navigate to Login screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(

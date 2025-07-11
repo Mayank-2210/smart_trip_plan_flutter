@@ -8,7 +8,7 @@ import '../presentation/home/home_screen.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
 
-  // 🔐 Sign up with email & password
+  // Sign up with email & password
   Future<void> signUpWithEmail(
     String email,
     String password,
@@ -20,11 +20,11 @@ class AuthService {
       password: password,
     );
 
-    // ✅ Update display name
+    // Update display name
     await userCredential.user!.updateDisplayName(name);
     await userCredential.user!.reload(); // Refresh local user cache
 
-    // ✅ Navigate to Home with username
+    // Navigate to Home with username
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -33,7 +33,7 @@ class AuthService {
     );
   }
 
-  // 🔐 Sign in with Google
+  // Sign in with Google
   Future<void> signInWithGoogle(BuildContext context) async {
     final googleUser = await GoogleSignIn().signIn();
     final googleAuth = await googleUser?.authentication;
@@ -45,7 +45,7 @@ class AuthService {
 
     final userCredential = await _auth.signInWithCredential(credential);
 
-    // ✅ Get display name with fallback
+    // Get display name with fallback
     final name = userCredential.user?.displayName ?? 'Traveler';
 
     Navigator.pushReplacement(

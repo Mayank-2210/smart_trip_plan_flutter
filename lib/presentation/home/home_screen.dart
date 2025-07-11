@@ -33,17 +33,22 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => savedItineraries = data);
   }
 
-  void _navigateToGeneratingScreen() {
-    final prompt = _promptController.text.trim();
-    if (prompt.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => GeneratingScreen(prompt: prompt, username: widget.username),
-        ),
-      );
+  void _navigateToGeneratingScreen() async {
+  final prompt = _promptController.text.trim();
+  if (prompt.isNotEmpty) {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GeneratingScreen(prompt: prompt, username: widget.username),
+      ),
+    );
+
+    if (result == true) {
+      _loadItineraries(); //Reload saved itineraries after saving
     }
   }
+}
+
 int totalTokensUsed = 0;
   void _openProfile() {
     Navigator.push(

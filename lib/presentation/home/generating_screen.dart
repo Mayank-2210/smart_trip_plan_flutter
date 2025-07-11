@@ -22,7 +22,7 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
     _generate();
   }
 
-  /// Send the prompt to Ollama and navigate to ItineraryScreen
+  /// Sending the prompt to Ollama and navigate to ItineraryScreen
   void _generate() async {
     try {
       final result = await ollamaService.generateItinerary(widget.prompt);
@@ -49,7 +49,7 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to generate itinerary: $e")),
         );
-        Navigator.pop(context); // Go back if fail
+        Navigator.pop(context); 
       }
     }
   }

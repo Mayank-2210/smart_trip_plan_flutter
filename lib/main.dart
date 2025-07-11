@@ -27,7 +27,7 @@ class SmartTripApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF065F46), // ✅ Your green
+          seedColor: const Color(0xFF065F46), 
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFF1F5F4),

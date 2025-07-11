@@ -63,14 +63,14 @@ class ProfileScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-            const Text("📊 Token Usage", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text("Token Usage", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
 
-            _buildTokenCard("🧠 Total Tokens Used", totalTokens, Colors.teal),
+            _buildTokenCard("Total Tokens Used", totalTokens, Colors.teal),
             const SizedBox(height: 16),
-            _buildTokenProgressBar("📝 Prompt Tokens", (totalTokens * 0.4).toInt(), totalTokens, Colors.blue),
+            _buildTokenProgressBar("Prompt Tokens", (totalTokens * 0.4).toInt(), totalTokens, Colors.blue),
             const SizedBox(height: 10),
-            _buildTokenProgressBar("💬 Response Tokens", (totalTokens * 0.6).toInt(), totalTokens, Colors.green),
+            _buildTokenProgressBar("Response Tokens", (totalTokens * 0.6).toInt(), totalTokens, Colors.green),
             const SizedBox(height: 12),
             Text("💰 Estimated Cost: ₹$tokenCost", style: const TextStyle(fontSize: 16)),
 
