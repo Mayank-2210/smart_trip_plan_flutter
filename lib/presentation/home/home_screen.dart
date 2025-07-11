@@ -40,13 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadItineraries();
   }
 
-  /// Load saved itineraries from Firestore
   void _loadItineraries() async {
     final data = await firebaseService.getItineraries();
     setState(() => savedItineraries = data);
   }
 
-  /// Generate itinerary using Ollama and track token usage
   void _sendPrompt() async {
     final prompt = _promptController.text.trim();
     if (prompt.isEmpty) return;
@@ -60,7 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final result = await ollamaService.generateItinerary(prompt);
       final responseJson = jsonEncode(result);
 
-      // Approximate token count: 1 token ≈ 4 characters (very rough estimate)
       lastPromptTokens = (prompt.length / 4).ceil();
       lastResponseTokens = (responseJson.length / 4).ceil();
       totalTokensUsed += lastPromptTokens + lastResponseTokens;
@@ -83,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Save itinerary to Firestore
   void _saveItinerary() async {
     if (itineraryJson == null) return;
 
@@ -103,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Open first location on Google Maps
   void _openMap() {
     if (itineraryJson == null) return;
 
@@ -113,23 +108,19 @@ class _HomeScreenState extends State<HomeScreen> {
     launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  /// Delete itinerary from Firestore
   void _deleteItinerary(String id) async {
     await firebaseService.deleteItinerary(id);
     _loadItineraries();
   }
 
-  /// Refine itinerary by putting previous prompt back
   void _refineItinerary() {
     _promptController.text = previousPrompt;
   }
 
-  /// Share itinerary
   void _shareItinerary(String data) {
     Share.share(data);
   }
 
-  /// Show saved itinerary full screen
   void _showSavedItinerary(ItineraryFirestoreModel itinerary) {
     final json = jsonDecode(itinerary.jsonData);
     showDialog(
@@ -167,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Show profile dialog with logout
   void _showProfileDialog() {
     showDialog(
       context: context,
@@ -208,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.person_outline),
             onPressed: _showProfileDialog,
             tooltip: "Profile",
           )
@@ -218,93 +208,89 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Hi ${widget.username},", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text("Welcome, ${widget.username} 👋",
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                      )),
                   const SizedBox(height: 8),
-                  const Text("Where do you want to go?"),
+                  const Text("Where would you like to go?", style: TextStyle(fontSize: 16)),
                   const SizedBox(height: 16),
 
-                  // PROMPT
+                  TextField(
+                    controller: _promptController,
+                    decoration: InputDecoration(
+                      hintText: "Enter your trip details",
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _sendPrompt,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text("Generate Itinerary", style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: _promptController,
-                          decoration: const InputDecoration(
-                            hintText: "Generate your itinerary",
-                            border: OutlineInputBorder(),
+                        child: OutlinedButton(
+                          onPressed: _refineItinerary,
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
+                          child: const Text("Refine"),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: isLoading ? null : _sendPrompt,
-                        child: isLoading
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text("Go"),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // ACTIONS
-                  Row(
-                    children: [
-                      ElevatedButton(onPressed: _refineItinerary, child: const Text("Refine Itinerary")),
-                      const SizedBox(width: 10),
-                      ElevatedButton(onPressed: _saveItinerary, child: const Text("Save Itinerary")),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // GENERATED ITINERARY
-                  if (itineraryJson != null)
-                    Expanded(
-                      child: Card(
-                        elevation: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: ListView(
-                            children: [
-                              Text(itineraryJson!['title'], style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Text("${itineraryJson!['startDate']} → ${itineraryJson!['endDate']}"),
-                              const SizedBox(height: 16),
-                              for (var day in itineraryJson!['days']) ...[
-                                Text("${day['date']} - ${day['summary']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
-                                for (var item in day['items'])
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
-                                    child: Text("${item['time']} - ${item['activity']} (${item['location']})"),
-                                  ),
-                                const SizedBox(height: 12),
-                              ],
-                              ElevatedButton.icon(
-                                onPressed: _openMap,
-                                icon: const Icon(Icons.map),
-                                label: const Text("Open First Location in Maps"),
-                              )
-                            ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _saveItinerary,
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
+                          child: const Text("Save"),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
 
-                  const Text("Your Saved Itineraries:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const Text("Saved Itineraries", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
 
                   SizedBox(
-                    height: 120,
+                    height: 130,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: savedItineraries.length,
@@ -313,44 +299,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         return GestureDetector(
                           onTap: () => _showSavedItinerary(item),
                           onLongPress: () => _deleteItinerary(item.id),
-                          child: Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Container(
-                              width: 200,
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(item.prompt,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () => _deleteItinerary(item.id)),
-                                      IconButton(
-                                          icon: const Icon(Icons.share),
-                                          onPressed: () => _shareItinerary(item.jsonData)),
-                                    ],
-                                  )
-                                ],
-                              ),
+                          child: Container(
+                            width: 180,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.prompt,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                                const Spacer(),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(Icons.share, size: 18),
+                                    const SizedBox(width: 8),
+                                    Icon(Icons.delete_outline, size: 18),
+                                  ],
+                                )
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
           ),
 
-          // DEBUG OVERLAY FOR TOKENS
           if (kDebugMode)
             Positioned(
               right: 12,
