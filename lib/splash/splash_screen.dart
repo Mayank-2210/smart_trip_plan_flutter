@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../presentation/auth/signup_screen.dart';
 import '../presentation/home/home_screen.dart';
 
@@ -26,20 +25,20 @@ class _SplashScreenState extends State<SplashScreen> {
     final user = _auth.currentUser;
 
     if (user != null) {
+      final username = user.displayName ??
+          user.email?.split('@')[0] ??
+          'Traveler';
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            username: user.displayName ?? user.email?.split('@')[0] ?? 'User',
-          ),
+          builder: (_) => HomeScreen(username: username),
         ),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const SignUpScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SignUpScreen()),
       );
     }
   }
@@ -48,7 +47,23 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.travel_explore, size: 64, color: Color(0xFF065F46)),
+            SizedBox(height: 12),
+            Text(
+              "Smart Trip Planner",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF065F46),
+              ),
+            ),
+            SizedBox(height: 24),
+            CircularProgressIndicator(color: Color(0xFF065F46)),
+          ],
+        ),
       ),
     );
   }
