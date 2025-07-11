@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:smart_trip_plan/presentation/auth/signup_screen.dart';
 import 'package:smart_trip_plan/splash/splash_screen.dart';
 import 'firebase_options.dart'; 
 

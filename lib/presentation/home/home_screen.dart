@@ -1,225 +1,189 @@
+// lib/presentation/home/home_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // ✅ NEW: For opening Google Maps
-import 'package:share_plus/share_plus.dart'; // ✅ NEW: For sharing
-import 'package:firebase_auth/firebase_auth.dart'; // ✅ For logout
-import '../auth/signup_screen.dart';
+import 'package:smart_trip_plan/services/ollama_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
 
-  const HomeScreen({Key? key, required this.username}) : super(key: key);
+  const HomeScreen({super.key, required this.username});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _promptController = TextEditingController();
-  String? previousPrompt;
+  final _promptController = TextEditingController();
+  final ollamaService = OllamaService();
 
-  // ✅ Mocked AI response for now
   Map<String, dynamic>? itineraryJson;
+  bool isLoading = false;
 
-  /// ✅ MOCK: Simulate sending prompt to AI
+  String previousPrompt = "";
+
+  /// 🔁 Send prompt to backend via Ollama
   void _sendPrompt() async {
     final prompt = _promptController.text.trim();
     if (prompt.isEmpty) return;
 
     setState(() {
-      itineraryJson = {
-        "title": "Kyoto 5-Day Solo Trip",
-        "startDate": "2025-04-10",
-        "endDate": "2025-04-15",
-        "days": [
-          {
-            "date": "2025-04-10",
-            "summary": "Fushimi Inari & Gion",
-            "items": [
-              {
-                "time": "09:00",
-                "activity": "Climb Fushimi Inari Shrine",
-                "location": "34.9671,135.7727"
-              },
-              {
-                "time": "14:00",
-                "activity": "Lunch at Nishiki Market",
-                "location": "35.0047,135.7630"
-              },
-              {
-                "time": "18:30",
-                "activity": "Evening walk in Gion",
-                "location": "35.0037,135.7788"
-              }
-            ]
-          }
-        ]
-      };
-      previousPrompt = prompt;
-    });
-  }
-
-  /// ✅ Open Google Maps with first location
-  void _openFirstLocation() {
-    if (itineraryJson != null &&
-        itineraryJson!["days"] != null &&
-        itineraryJson!["days"].isNotEmpty) {
-      final firstLocation = itineraryJson!["days"][0]["items"][0]["location"];
-      final url = "https://www.google.com/maps/search/?api=1&query=$firstLocation";
-      launchUrl(Uri.parse(url));
-    }
-  }
-
-  /// ✅ Save itinerary to local cache (placeholder for Isar)
-  void _saveItinerary() {
-    if (itineraryJson != null) {
-      print("Saving itinerary...");
-      // TODO: Use Isar to save prompt + response
-      setState(() {
-        _promptController.clear(); // ✅ Clear input after save
-      });
-    }
-  }
-
-  /// ✅ Refine prompt (bring old back to box)
-  void _refinePrompt() {
-    if (previousPrompt != null) {
-      setState(() {
-        _promptController.text = previousPrompt!;
-      });
-    }
-  }
-
-  /// ✅ Share itinerary (share title for now)
-  void _shareItinerary() {
-    if (itineraryJson != null) {
-      final title = itineraryJson!["title"];
-      Share.share("Check out my trip plan: $title");
-    }
-  }
-
-  /// ✅ Delete itinerary from memory (mock)
-  void _deleteItinerary() {
-    setState(() {
+      isLoading = true;
       itineraryJson = null;
-      previousPrompt = null;
     });
+
+    try {
+      final result = await ollamaService.generateItinerary(prompt);
+
+      setState(() {
+        itineraryJson = result;
+        previousPrompt = prompt;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Itinerary generated successfully")),
+      );
+    } catch (e) {
+      print("AI Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to generate itinerary: $e")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  /// 🌍 Open first location in Maps
+  void _openMap() {
+    if (itineraryJson == null) return;
+
+    final coords = itineraryJson!['days'][0]['items'][0]['location'];
+    final uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$coords");
+
+    launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  /// 📝 Refine prompt
+  void _refinePrompt() {
+    _promptController.text = previousPrompt;
+  }
+
+  /// 💾 Save itinerary (placeholder)
+  void _saveItinerary() {
+    print("TODO: Save to local Isar DB.");
+    _promptController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Trip Planner"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const SignUpScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _promptController,
-              decoration: InputDecoration(
-                labelText: "Describe your trip",
-                hintText: "e.g. 4 days in Tokyo for a solo traveler...",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 10),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _refinePrompt,
-                    child: const Text("Refine"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _saveItinerary,
-                    child: const Text("Save"),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            ElevatedButton(
-              onPressed: _sendPrompt,
-              child: const Text("Create My Itinerary"),
-            ),
-
-            const SizedBox(height: 20),
-
-            if (itineraryJson != null) ...[
-              Text(
-                itineraryJson!["title"] ?? "Your Itinerary",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
+      appBar: AppBar(title: const Text("Smart Trip Planner"), automaticallyImplyLeading: false),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text("Hi ${widget.username},", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text(
-                "Start: ${itineraryJson!["startDate"]}  →  End: ${itineraryJson!["endDate"]}",
-              ),
-              const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: itineraryJson!["days"].length,
-                itemBuilder: (context, index) {
-                  final day = itineraryJson!["days"][index];
-                  return Card(
-                    child: ListTile(
-                      title: Text("${day["date"]}: ${day["summary"]}"),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(
-                          day["items"].length,
-                          (i) {
-                            final item = day["items"][i];
-                            return Text("${item["time"]} - ${item["activity"]}");
-                          },
-                        ),
+              const Text("Where do you want to go?"),
+
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _promptController,
+                      decoration: const InputDecoration(
+                        hintText: "Generate your itinerary",
+                        border: OutlineInputBorder(),
                       ),
                     ),
-                  );
-                },
-              ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.map),
-                    onPressed: _openFirstLocation,
-                    tooltip: "Open Map",
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.share),
-                    onPressed: _shareItinerary,
-                    tooltip: "Share Itinerary",
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: _deleteItinerary,
-                    tooltip: "Delete",
-                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : _sendPrompt,
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text("Go"),
+                  )
                 ],
               ),
-            ]
-          ],
+
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  ElevatedButton(onPressed: _refinePrompt, child: const Text("Refine")),
+                  const SizedBox(width: 10),
+                  ElevatedButton(onPressed: _saveItinerary, child: const Text("Save")),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              if (itineraryJson != null)
+                Expanded(
+                  child: Card(
+                    elevation: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ListView(
+                        children: [
+                          Text(itineraryJson!['title'],
+                              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+
+                          const SizedBox(height: 8),
+                          Text("${itineraryJson!['startDate']} → ${itineraryJson!['endDate']}"),
+
+                          const SizedBox(height: 16),
+
+                          for (var day in itineraryJson!['days']) ...[
+                            Text(" ${day['date']} - ${day['summary']}",
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            for (var item in day['items'])
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Text("${item['time']} - ${item['activity']} (${item['location']})"),
+                              ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          ElevatedButton.icon(
+                            onPressed: _openMap,
+                            icon: const Icon(Icons.map),
+                            label: const Text("Open First Location in Maps"),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 16),
+
+              // Placeholder for saved itineraries
+              SizedBox(
+                height: 140,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    Card(
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(12),
+                        child: const Text("Saved itinerary placeholder..."),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
