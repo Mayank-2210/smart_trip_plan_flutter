@@ -7,11 +7,13 @@ class ProfileScreen extends StatelessWidget {
   final String email;
   final int totalTokens;
 
+
   const ProfileScreen({
     super.key,
     required this.username,
     required this.email,
     required this.totalTokens,
+
   });
 
   void _logout(BuildContext context) async {
