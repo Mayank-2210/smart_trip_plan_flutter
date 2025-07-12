@@ -83,7 +83,9 @@ Token Cost Table
 
 -----------------------------------------------------------------------------------------------------------------------
 
-Demo Video
+Demo Videos
 
-()
+1. [Smart Trip Planner - UI Walkthrough](https://drive.google.com/file/d/1rSy6_b7zoFc2G459koxpYP3jA4XQS4bd/view?usp=drivesdk)
+2. [AI Itinerary Generation - End to End Flow](https://drive.google.com/file/d/1rMVKCPYL64Xxa8WlH6Uc97aEPsI6DKZI/view?usp=drivesdk)
+
 -------------------------------------------------------------------------------------------------------------------------
